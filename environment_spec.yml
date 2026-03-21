@@ -1,0 +1,15 @@
+name: open_rppg
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12.13
+  - numpy
+  - einops[version='>=0.8']
+  - onnxruntime[version='>=1.8']
+  - keras[version='>=3.5.0']
+  - scipy[version='>=1.8']
+  - jax[version='>=0.4.26']
+  - av[version='>=13']
+  - opencv
+prefix: /home/user/anaconda3/envs/open_rppg
