@@ -1,5 +1,13 @@
+# Pycache files
 *.pyc
-*.mp4
+
+# Environment variables
 .env
+
+# Videos and files
+*.mp4
 video/
 ground_truth/
+*.txt
+*.log
+*.csv
