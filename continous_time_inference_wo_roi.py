@@ -6,10 +6,8 @@ import os
 import time
 from scipy.stats import pearsonr
 
-face_cascade = cv2.CascadeClassifier("content/harr_casscade_classifiers/haarcascade_frontalface_default.xml")
-
 models = [
-    # 'FacePhys.rlap',
+    'FacePhys.rlap',
     # 'ME-chunk.rlap',
     # 'ME-flow.rlap',
     # 'ME-chunk.pure',
@@ -18,7 +16,7 @@ models = [
     # 'PhysMamba.rlap',
     # 'RhythmMamba.rlap',
     # 'RhythmMamba.pure',
-    # 'PhysFormer.pure',
+    'PhysFormer.pure',
     'PhysFormer.rlap',
     # 'TSCAN.rlap',
     # 'TSCAN.pure',
@@ -32,7 +30,7 @@ video_name = ""
 video_path = f"video/{video_name}.avi"
 print(f"Video_name: {video_name}")
 
-# --- Split video into 15s sub-videos ---
+# --- Split video into 30s sub-videos ---
 cap = cv2.VideoCapture(video_path)
 fps = cap.get(cv2.CAP_PROP_FPS)
 total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -72,42 +70,8 @@ for model_name in models:
         temp_video = f"temp_segment_{idx}.mp4"
         height, width, _ = frames[0].shape
         out = cv2.VideoWriter(temp_video, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
-
-        # Detect face only in the first frame
-        first_frame = frames[0]
-        gray = cv2.cvtColor(first_frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(60, 60))
-        if len(faces) > 0:
-            print("Selecting ROI with Haar Cascade (first frame only)")
-            x, y, w, h = max(faces, key=lambda rect: rect[2] * rect[3])
-            margin = 0.2
-            mx = int(w * margin)
-            my = int(h * margin)
-            x1 = max(x - mx, 0)
-            y1 = max(y - my, 0)
-            x2 = min(x + w + mx, first_frame.shape[1])
-            y2 = min(y + h + my, first_frame.shape[0])
-            crop_coords = (x1, y1, x2, y2)
-
-            # Show the cropped face ROI once for user confirmation
-            # face_crop = first_frame[y1:y2, x1:x2]
-            # face_crop = cv2.resize(face_crop, (width, height))
-            # cv2.imshow('Cropped Face ROI (first frame)', face_crop)
-            # cv2.waitKey(0)  # Wait for user to press a key
-            # cv2.destroyAllWindows()
-        else:
-            print("Failed to use HaarCascade on first frame, falling back to full frame.")
-            crop_coords = None
-
         for frame in frames:
-            if crop_coords:
-                x1, y1, x2, y2 = crop_coords
-                face_crop = frame[y1:y2, x1:x2]
-                face_crop = cv2.resize(face_crop, (width, height))
-                out.write(face_crop)
-            else:
-                out.write(frame)
-
+            out.write(frame)
         out.release()
         
         results = model.process_video(temp_video)
@@ -129,6 +93,15 @@ for model_name in models:
     print("Time taken for each segment:")
     for i, t in enumerate(segment_times):
         print(f"  Segment {i}: {t:.2f} seconds")
+
+    # --- Plot HR over time ---
+    # plt.figure(figsize=(10, 5))
+    # plt.plot(time_array, hr_array, marker='o')
+    # plt.xlabel('Time (s)')
+    # plt.ylabel('Estimated HR (BPM)')
+    # plt.title(f'Estimated HR over time for {video_name}')
+    # plt.grid(True)
+    # plt.show()
 
     # --- Plot estimated HR and ground truth HR together ---
     gt_file = 'ground_truth/sp02wave_L9v2_16-04-13_16-06-12.txt'
